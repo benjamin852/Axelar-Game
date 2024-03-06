@@ -155,19 +155,4 @@ contract InterchainGaming is AxelarExecutable {
         }
         if (!found) uniqueTokens.push(_tokenSymbol);
     }
-    /*
-    function _executeWithToken(
-        string calldata _sourceChain,
-        string calldata,
-        bytes calldata _payload,
-        string calldata _symbol,
-        uint256 _amount
-    ) internal override {
-        (address player, uint256 guess) = abi.decode(
-            _payload,
-            (address, uint256)
-        );
-        _checkIfWinner(player, guess, _symbol, _amount, _sourceChain);
-    }  
-    */
 }
