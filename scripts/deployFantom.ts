@@ -1,5 +1,5 @@
 import { ethers } from 'hardhat';
-import MockERC20 from "../../artifacts/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.json";
+import MockERC20 from "../artifacts/@openzeppelin/contracts/token/ERC20/IERC20.sol/IERC20.json";
 import chains from '../chains.json'
 
 async function main() {

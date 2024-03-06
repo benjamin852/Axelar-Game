@@ -14,16 +14,10 @@ contract InterchainGaming is AxelarExecutable {
     uint256 public lastRoll;
     uint256 public lastBetAmount;
     address public lastPlayer;
-    address public lastWinner;
 
     string[] public uniqueTokens;
 
     IAxelarGasService public immutable gasService;
-
-    string public winersChainTest;
-    string public playerToStringTest;
-    string public tokenSymbolTest;
-    uint256 public transferAmountTest;
 
     constructor(
         address _gateway,
@@ -52,7 +46,7 @@ contract InterchainGaming is AxelarExecutable {
             //send funds to this contract
             IERC20(tokenAddress).transferFrom(
                 msg.sender,
-                address(this),
+                address(this), //TODO address(gameReceiver)
                 _amount
             );
 
@@ -105,11 +99,10 @@ contract InterchainGaming is AxelarExecutable {
         string calldata _symbol,
         uint256 _amount
     ) internal override {
-        (address player, uint256 guess) = abi.decode(
-            _payload,
-            (address, uint256)
-        );
-        _checkIfWinner(player, guess, _symbol, _amount, _sourceChain);
+        address player = abi.decode(_payload, (address));
+        address tokenAddress = gateway.tokenAddresses(_symbol);
+
+        IERC20(tokenAddress).transfer(player, _amount);
     }
 
     function _checkIfWinner(
@@ -120,7 +113,8 @@ contract InterchainGaming is AxelarExecutable {
         string calldata _bettorsChain
     ) internal {
         _addUniqueTokenSymbol(_tokenSymbol);
-        uint256 diceResult = (block.timestamp % 6) + 1;
+        // uint256 diceResult = (block.timestamp % 6) + 1;
+        uint256 diceResult = 5;
 
         bool won = _guess == diceResult;
 
@@ -129,6 +123,22 @@ contract InterchainGaming is AxelarExecutable {
         lastPlayer = _player;
 
         if (won) _payOutAllTokensToWinner(_player, _bettorsChain);
+    }
+
+    function _payOutAllTokensToWinner(
+        address _player,
+        string calldata _winnersChain
+    ) internal {
+        for (uint256 i = 0; i < uniqueTokens.length; i++) {
+            string memory tokenSymbol = uniqueTokens[i];
+
+            address tokenAddress = gateway.tokenAddresses(tokenSymbol);
+
+            uint256 transferAmount = IERC20(tokenAddress).balanceOf(
+                address(this)
+            );
+            IERC20(tokenAddress).transfer(_player, transferAmount);
+        }
     }
 
     function _addUniqueTokenSymbol(string memory _tokenSymbol) internal {
@@ -145,34 +155,19 @@ contract InterchainGaming is AxelarExecutable {
         }
         if (!found) uniqueTokens.push(_tokenSymbol);
     }
-
-    function _payOutAllTokensToWinner(
-        address _player,
-        string calldata _winnersChain
-    ) internal {
-        lastWinner = _player;
-
-        for (uint256 i = 0; i < uniqueTokens.length; i++) {
-            string memory tokenSymbol = uniqueTokens[i];
-
-            address tokenAddress = gateway.tokenAddresses(tokenSymbol);
-
-            uint256 transferAmount = IERC20(tokenAddress).balanceOf(
-                address(this)
-            );
-            if (bytes(_winnersChain).length == 0) {
-                IERC20(tokenAddress).transfer(_player, transferAmount);
-            } else {
-                IERC20(tokenAddress).approve(address(gateway), 1 ether);
-
-                gateway.callContractWithToken(
-                    _winnersChain,
-                    _player.toString(),
-                    "",
-                    tokenSymbol,
-                    transferAmount
-                );
-            }
-        }
-    }
+    /*
+    function _executeWithToken(
+        string calldata _sourceChain,
+        string calldata,
+        bytes calldata _payload,
+        string calldata _symbol,
+        uint256 _amount
+    ) internal override {
+        (address player, uint256 guess) = abi.decode(
+            _payload,
+            (address, uint256)
+        );
+        _checkIfWinner(player, guess, _symbol, _amount, _sourceChain);
+    }  
+    */
 }
