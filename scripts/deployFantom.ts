@@ -9,6 +9,7 @@ async function main() {
     if (!privateKey) throw new Error("Invalid private key. Make sure the PRIVATE_KEY environment variable is set.")
 
     const gameInterchain = await ethers.deployContract('InterchainGaming', [chains[1].gateway, chains[1].gasService]);
+    const gameInterchainReceiver = await ethers.deployContract('InterchainGameReceiver', [chains[1].gateway, chains[1].gasService]);
 
     const wallet = new ethers.Wallet(privateKey);
     const connectedWallet = wallet.connect(ethers.provider);
@@ -24,6 +25,7 @@ async function main() {
     await aUSDC.approve(gameInterchain.target, 10e18.toString());
 
     console.log(`fantom contract address: ${gameInterchain.target}`);
+    console.log(`fantom game receivercontract address: ${gameInterchainReceiver.target}`);
 
 }
 
