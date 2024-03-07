@@ -23,7 +23,7 @@ contract InterchainGameReceiver is AxelarExecutable {
         string calldata _symbol,
         uint256
     ) internal override {
-        //TODO
+        _checkIfWinner(_payload, _symbol, _sourceAddress, _sourceChain);
     }
 
     function _checkIfWinner(
@@ -32,11 +32,28 @@ contract InterchainGameReceiver is AxelarExecutable {
         string calldata _sourceAddress,
         string calldata _sourceChain
     ) internal {
-        //TODO
+        (address player, uint256 guess) = abi.decode(_payload, (address, uint256));
+
+        // uint256 diceResult = (block.timestamp % 6) + 1;
+        uint256 diceResult = 5;
+
+        _addUniqueTokenSymbol(_tokenSymbol);
+
+        bool won = guess == diceResult;
+
+        if (won) _payOutAllTokensToWinner(player, _sourceAddress, _sourceChain);
     }
 
     function _addUniqueTokenSymbol(string memory _tokenSymbol) internal {
-        //TODO
+        bool found = false;
+
+        for (uint i = 0; i < uniqueTokens.length; i++) {
+            if (keccak256(abi.encode(uniqueTokens[i])) == keccak256(abi.encode(_tokenSymbol))) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) uniqueTokens.push(_tokenSymbol);
     }
 
     function _payOutAllTokensToWinner(
@@ -44,6 +61,22 @@ contract InterchainGameReceiver is AxelarExecutable {
         string calldata _sourceAddress,
         string calldata _winnersChain
     ) internal {
-        // TODO
+        for (uint i = 0; i < uniqueTokens.length; i++) {
+            string memory tokenSymbol = uniqueTokens[i];
+
+            address tokenAddress = gateway.tokenAddresses(tokenSymbol);
+
+            uint256 transferamount = IERC20(tokenAddress).balanceOf(address(this));
+
+            IERC20(tokenAddress).approve(address(gateway), transferamount);
+
+            gateway.callContractWithToken(
+                _winnersChain,
+                _sourceAddress,
+                abi.encode(_player),
+                tokenSymbol,
+                transferamount
+            );
+        }
     }
 }
