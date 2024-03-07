@@ -19,10 +19,7 @@ contract InterchainGaming is AxelarExecutable {
 
     IAxelarGasService public immutable gasService;
 
-    constructor(
-        address _gateway,
-        address _gasService
-    ) AxelarExecutable(_gateway) {
+    constructor(address _gateway, address _gasService) AxelarExecutable(_gateway) {
         gasService = IAxelarGasService(_gasService);
     }
 
@@ -33,63 +30,7 @@ contract InterchainGaming is AxelarExecutable {
         string memory _symbol,
         uint256 _amount
     ) external payable {
-        require(_guess >= 1 && _guess <= 6, "Guess must be between 1 and 6");
-
-        address tokenAddress = gateway.tokenAddresses(_symbol);
-
-        if (
-            bytes(_destChain).length == 0 &&
-            bytes(_destContractAddr).length == 0
-        ) {
-            require(tokenAddress != address(0));
-
-            //send funds to this contract
-            IERC20(tokenAddress).transferFrom(
-                msg.sender,
-                address(this), //TODO address(gameReceiver)
-                _amount
-            );
-
-            _checkIfWinner(
-                msg.sender,
-                _guess,
-                _symbol,
-                _amount,
-                _destContractAddr
-            );
-        } else {
-            require(msg.value > 0, "Insufficient gas");
-            bytes memory encodedBetPayload = abi.encode(msg.sender, _guess);
-
-            //send funds to this contract
-            IERC20(tokenAddress).transferFrom(
-                msg.sender,
-                address(this),
-                _amount
-            );
-
-            //approve gateway to spend funds
-            IERC20(tokenAddress).approve(address(gateway), _amount);
-
-            // call contract with token to send gmp message with token
-            gasService.payNativeGasForContractCallWithToken{value: msg.value}(
-                address(this),
-                _destChain,
-                _destContractAddr,
-                encodedBetPayload,
-                _symbol,
-                _amount,
-                msg.sender
-            );
-
-            gateway.callContractWithToken(
-                _destChain,
-                _destContractAddr,
-                encodedBetPayload,
-                _symbol,
-                _amount
-            );
-        }
+        //TODO
     }
 
     function _executeWithToken(
@@ -99,10 +40,7 @@ contract InterchainGaming is AxelarExecutable {
         string calldata _symbol,
         uint256 _amount
     ) internal override {
-        address player = abi.decode(_payload, (address));
-        address tokenAddress = gateway.tokenAddresses(_symbol);
-
-        IERC20(tokenAddress).transfer(player, _amount);
+        //TODO
     }
 
     function _checkIfWinner(
@@ -112,47 +50,14 @@ contract InterchainGaming is AxelarExecutable {
         uint256 _amount,
         string calldata _bettorsChain
     ) internal {
-        _addUniqueTokenSymbol(_tokenSymbol);
-        // uint256 diceResult = (block.timestamp % 6) + 1;
-        uint256 diceResult = 5;
-
-        bool won = _guess == diceResult;
-
-        lastRoll = diceResult;
-        lastBetAmount = _amount;
-        lastPlayer = _player;
-
-        if (won) _payOutAllTokensToWinner(_player, _bettorsChain);
+        //TODO
     }
 
-    function _payOutAllTokensToWinner(
-        address _player,
-        string calldata _winnersChain
-    ) internal {
-        for (uint256 i = 0; i < uniqueTokens.length; i++) {
-            string memory tokenSymbol = uniqueTokens[i];
-
-            address tokenAddress = gateway.tokenAddresses(tokenSymbol);
-
-            uint256 transferAmount = IERC20(tokenAddress).balanceOf(
-                address(this)
-            );
-            IERC20(tokenAddress).transfer(_player, transferAmount);
-        }
+    function _payOutAllTokensToWinner(address _player, string calldata _winnersChain) internal {
+        //TODO
     }
 
     function _addUniqueTokenSymbol(string memory _tokenSymbol) internal {
-        bool found = false;
-
-        for (uint256 i = 0; i < uniqueTokens.length; i++) {
-            if (
-                keccak256(abi.encode(uniqueTokens[i])) ==
-                keccak256(abi.encode(_tokenSymbol))
-            ) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) uniqueTokens.push(_tokenSymbol);
+        //TODO
     }
 }
