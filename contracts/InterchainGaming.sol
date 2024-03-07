@@ -11,12 +11,6 @@ import {AddressToString} from "@axelar-network/axelar-gmp-sdk-solidity/contracts
 contract InterchainGaming is AxelarExecutable {
     using AddressToString for address;
 
-    uint256 public lastRoll;
-    uint256 public lastBetAmount;
-    address public lastPlayer;
-
-    string[] public uniqueTokens;
-
     IAxelarGasService public immutable gasService;
 
     constructor(address _gateway, address _gasService) AxelarExecutable(_gateway) {
