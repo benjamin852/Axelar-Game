@@ -6,19 +6,13 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AxelarExecutable} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/executable/AxelarExecutable.sol";
 import {IAxelarGateway} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGateway.sol";
 import {IAxelarGasService} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGasService.sol";
-import {AddressToString} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/libs/AddressString.sol";
 
 contract InterchainGameReceiver is AxelarExecutable {
-    using AddressToString for address;
-
     string[] public uniqueTokens;
 
     IAxelarGasService public immutable gasService;
 
-    constructor(
-        address _gateway,
-        address _gasService
-    ) AxelarExecutable(_gateway) {
+    constructor(address _gateway, address _gasService) AxelarExecutable(_gateway) {
         gasService = IAxelarGasService(_gasService);
     }
 
@@ -27,7 +21,7 @@ contract InterchainGameReceiver is AxelarExecutable {
         string calldata _sourceAddress,
         bytes calldata _payload,
         string calldata _symbol,
-        uint256 _amount
+        uint256
     ) internal override {
         _checkIfWinner(_payload, _symbol, _sourceAddress, _sourceChain);
     }
@@ -38,13 +32,11 @@ contract InterchainGameReceiver is AxelarExecutable {
         string calldata _sourceAddress,
         string calldata _sourceChain
     ) internal {
-        (address player, uint256 guess) = abi.decode(
-            _payload,
-            (address, uint256)
-        );
+        (address player, uint256 guess) = abi.decode(_payload, (address, uint256));
+
+        uint256 diceResult = (block.timestamp % 6) + 1;
+
         _addUniqueTokenSymbol(_tokenSymbol);
-        // uint256 diceResult = (block.timestamp % 6) + 1;
-        uint256 diceResult = 5;
 
         bool won = guess == diceResult;
 
@@ -54,11 +46,8 @@ contract InterchainGameReceiver is AxelarExecutable {
     function _addUniqueTokenSymbol(string memory _tokenSymbol) internal {
         bool found = false;
 
-        for (uint256 i = 0; i < uniqueTokens.length; i++) {
-            if (
-                keccak256(abi.encode(uniqueTokens[i])) ==
-                keccak256(abi.encode(_tokenSymbol))
-            ) {
+        for (uint i = 0; i < uniqueTokens.length; i++) {
+            if (keccak256(abi.encode(uniqueTokens[i])) == keccak256(abi.encode(_tokenSymbol))) {
                 found = true;
                 break;
             }
@@ -71,27 +60,22 @@ contract InterchainGameReceiver is AxelarExecutable {
         string calldata _sourceAddress,
         string calldata _winnersChain
     ) internal {
-        for (uint256 i = 0; i < uniqueTokens.length; i++) {
+        for (uint i = 0; i < uniqueTokens.length; i++) {
             string memory tokenSymbol = uniqueTokens[i];
 
             address tokenAddress = gateway.tokenAddresses(tokenSymbol);
 
-            uint256 transferAmount = IERC20(tokenAddress).balanceOf(
-                address(this)
-            );
-            if (bytes(_winnersChain).length == 0) {
-                IERC20(tokenAddress).transfer(_player, transferAmount);
-            } else {
-                IERC20(tokenAddress).approve(address(gateway), 1 ether);
+            uint256 transferamount = IERC20(tokenAddress).balanceOf(address(this));
 
-                gateway.callContractWithToken(
-                    _winnersChain,
-                    _sourceAddress,
-                    abi.encode(_player),
-                    tokenSymbol,
-                    transferAmount
-                );
-            }
+            IERC20(tokenAddress).approve(address(gateway), transferamount);
+
+            gateway.callContractWithToken(
+                _winnersChain,
+                _sourceAddress,
+                abi.encode(_player),
+                tokenSymbol,
+                transferamount
+            );
         }
     }
 }
