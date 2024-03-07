@@ -34,8 +34,7 @@ contract InterchainGameReceiver is AxelarExecutable {
     ) internal {
         (address player, uint256 guess) = abi.decode(_payload, (address, uint256));
 
-        // uint256 diceResult = (block.timestamp % 6) + 1;
-        uint256 diceResult = 5;
+        uint256 diceResult = (block.timestamp % 6) + 1;
 
         _addUniqueTokenSymbol(_tokenSymbol);
 

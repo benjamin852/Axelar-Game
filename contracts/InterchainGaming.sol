@@ -78,8 +78,7 @@ contract InterchainGaming is AxelarExecutable {
 
     function _checkIfWinner(address _player, uint256 _guess, string memory _tokenSymbol, uint256 _amount) internal {
         _addUniqueTokenSymbol(_tokenSymbol);
-        // uint256 diceResult = (block.timestamp % 6) + 1;
-        uint256 diceResult = 5;
+        uint256 diceResult = (block.timestamp % 6) + 1;
 
         bool won = _guess == diceResult;
 
