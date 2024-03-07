@@ -8,7 +8,7 @@ async function main() {
 
     if (!privateKey) throw new Error("Invalid private key. Make sure the PRIVATE_KEY environment variable is set.")
 
-    const gameInterchain = await ethers.deployContract('InterchainGaming', [chains[0].gateway, chains[0].gasService]);
+    const gameInterchain = await ethers.deployContract('InterchainGaming', [chains[0].gateway, chains[0].gasService, ethers.ZeroAddress]);
 
     const wallet = new ethers.Wallet(privateKey);
     const connectedWallet = wallet.connect(ethers.provider);

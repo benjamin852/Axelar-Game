@@ -23,7 +23,7 @@ contract InterchainGameReceiver is AxelarExecutable {
         string calldata _symbol,
         uint256
     ) internal override {
-        //TODO
+        // TODO
     }
 
     function _checkIfWinner(
@@ -44,6 +44,6 @@ contract InterchainGameReceiver is AxelarExecutable {
         string calldata _sourceAddress,
         string calldata _winnersChain
     ) internal {
-        // TODO
+        //TODO
     }
 }
